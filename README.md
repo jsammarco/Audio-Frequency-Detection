@@ -43,7 +43,7 @@ Make sure your OS microphone permissions allow Python access.
 Run the program:
 
 ```bash
-python live_tone_scope.py
+python main.py
 ```
 
 A window will open showing the live waveform.  
@@ -88,7 +88,7 @@ Close the window to stop the program.
 
 ## File Overview
 
-- `live_tone_scope.py` — Main application for reading audio, detecting frequency, mapping notes, and plotting.
+- `main.py` — Main application for reading audio, detecting frequency, mapping notes, and plotting.
 - `README.md` — This documentation file.
 
 ---
