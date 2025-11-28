@@ -17,6 +17,7 @@ Repository: https://github.com/jsammarco/Audio-Frequency-Detection
 - Smooth plot updates via Matplotlib  
 - Cross-platform support (Windows, macOS, Linux)
 
+![Screenshot of the live interface capturing 1000hz](https://raw.githubusercontent.com/jsammarco/Audio-Frequency-Detection/d043486c9052d0cde2661c180100faba339c2dfd/screenshot.JPG)
 ---
 
 ## Installation
