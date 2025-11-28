@@ -65,7 +65,7 @@ Close the window to stop the program.
 
 ## File Overview
 
-- `live_tone_scope.py` — Main application for audio sampling, plotting, and frequency detection
+- `main.py` — Main application for audio sampling, plotting, and frequency detection
 - `README.md` — Project documentation
 
 ---
