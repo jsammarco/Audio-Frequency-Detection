@@ -2,6 +2,7 @@
 
 import queue
 import threading
+import math
 import numpy as np
 import sounddevice as sd
 import matplotlib.pyplot as plt
@@ -92,6 +93,44 @@ def get_latest_plot_samples():
     return data
 
 
+# ============================
+# Frequency -> Note mapping
+# ============================
+NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F",
+              "F#", "G", "G#", "A", "A#", "B"]
+
+
+def freq_to_note(freq_hz):
+    """
+    Convert a frequency in Hz to the nearest musical note name and cents offset.
+
+    Returns:
+        note_name (str): e.g. 'A4', 'C#5', or '--' if freq <= 0
+        cents (float): how many cents the freq is away from the nearest note
+    """
+    if freq_hz <= 0:
+        return "--", 0.0
+
+    # A4 = MIDI 69 = 440 Hz
+    # MIDI number from frequency:
+    #   midi = 69 + 12 * log2(f / 440)
+    midi_float = 69 + 12 * math.log2(freq_hz / 440.0)
+    midi_int = int(round(midi_float))
+
+    # Clamp to a reasonable MIDI range (0–127)
+    midi_int = max(0, min(127, midi_int))
+
+    # Note name and octave
+    note_index = midi_int % 12
+    octave = midi_int // 12 - 1
+    note_name = f"{NOTE_NAMES[note_index]}{octave}"
+
+    # Cents difference from the nearest equal-tempered note
+    cents = (midi_float - midi_int) * 100.0
+
+    return note_name, cents
+
+
 def main():
     global latest_freq
 
@@ -126,8 +165,13 @@ def main():
             y = get_latest_plot_samples()
             if len(y) == PLOT_SAMPLES:
                 line.set_ydata(y)
+
+                note_name, cents = freq_to_note(latest_freq)
+                # Example title:
+                # Live Waveform - 440.0 Hz - A4 (+0.3 cents)
                 ax.set_title(
-                    f"Live Waveform - Dominant frequency: {latest_freq:7.1f} Hz"
+                    f"Live Waveform - {latest_freq:7.1f} Hz - "
+                    f"{note_name} ({cents:+5.1f} cents)"
                 )
 
             fig.canvas.draw()

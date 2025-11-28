@@ -1,8 +1,8 @@
 # Audio Frequency Detection
 
-Real-time audio frequency detection and waveform visualizer written in Python.
+Real-time audio frequency detection, waveform visualization, and musical note identification written in Python.
 
-This project captures live audio from your microphone, displays a continuously updating waveform, and estimates the dominant frequency in real time using an FFT.  
+This project captures live audio from your microphone, displays a continuously updating waveform, estimates the dominant frequency in real time using FFT, **and maps that frequency to the nearest musical note (A4, C#5, etc.)**.
 
 Repository: https://github.com/jsammarco/Audio-Frequency-Detection
 
@@ -12,28 +12,29 @@ Repository: https://github.com/jsammarco/Audio-Frequency-Detection
 
 - Live microphone audio capture  
 - Real-time waveform visualization  
-- Dominant tone frequency detection (FFT-based)  
-- Smooth updating plot using Matplotlib  
-- Cross‑platform support (Windows, macOS, Linux)
+- Dominant tone frequency detection using FFT  
+- **Musical note mapping (A4, C#5, etc.) with cents offset**  
+- Smooth plot updates via Matplotlib  
+- Cross-platform support (Windows, macOS, Linux)
 
 ---
 
 ## Installation
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/jsammarco/Audio-Frequency-Detection
 cd Audio-Frequency-Detection
 ```
 
-### 2. Install required Python packages
+### 2. Install Required Python Packages
 
 ```bash
 pip install sounddevice numpy matplotlib
 ```
 
-You may also need to allow microphone access in your OS privacy settings.
+Make sure your OS microphone permissions allow Python access.
 
 ---
 
@@ -45,8 +46,18 @@ Run the program:
 python live_tone_scope.py
 ```
 
-A live waveform window will appear, updating in real time.  
-The detected tone frequency will show in the window title.
+A window will open showing the live waveform.  
+The plot title will display:
+
+- Detected frequency (Hz)  
+- Nearest musical note (e.g., A4, C#5)  
+- Cents difference from the exact note
+
+Example:
+
+```
+Live Waveform – 440.1 Hz – A4 (+0.3 cents)
+```
 
 Close the window to stop the program.
 
@@ -54,32 +65,62 @@ Close the window to stop the program.
 
 ## How It Works
 
-- **sounddevice** streams audio blocks from your microphone  
-- A **background thread**:
-  - Updates a circular audio buffer for plotting  
-  - Computes a windowed FFT for each block  
-  - Extracts the strongest frequency component  
-- **Matplotlib** continuously updates the waveform plot with the latest data
+### Audio Capture
+- `sounddevice.InputStream` streams microphone audio in small blocks.
+- Audio blocks are added to a thread-safe queue.
+
+### Processing Thread
+- Updates a circular buffer for waveform visualization.
+- Applies a Hanning window to each audio block.
+- Computes real FFT (`rfft`) to determine frequency magnitude.
+- Finds the peak bin → converts to Hz.
+- Converts frequency to:
+  - MIDI note number
+  - Note name (A4, C#5, etc.)
+  - Cents offset
+
+### Visualization
+- Matplotlib updates at ~100 FPS.
+- The waveform shows the last 0.1 seconds of audio.
+- The window title shows the detected note and frequency.
 
 ---
 
 ## File Overview
 
-- `main.py` — Main application for audio sampling, plotting, and frequency detection
-- `README.md` — Project documentation
+- `live_tone_scope.py` — Main application for reading audio, detecting frequency, mapping notes, and plotting.
+- `README.md` — This documentation file.
 
 ---
 
-## Future Enhancements (Optional)
+## Musical Note Mapping
 
-- Add frequency spectrum plot  
-- Add smoothing/averaging for frequency stability  
-- Display musical note mappings (A4, C#5, etc.)  
-- Save detected frequencies to CSV or log file  
-- Add GUI interface (Tkinter or PyQt)
+The system converts frequency → note using:
+
+```
+midi = 69 + 12 * log2(freq / 440)
+```
+
+Then determines:
+- Note name from MIDI index  
+- Octave number  
+- Cents deviation:  
+  `cents = (midi_float - midi_int) * 100`
+
+---
+
+## Future Enhancements
+
+Planned optional improvements:
+
+- Add a spectrum analyzer panel  
+- Noise gating & stability smoothing  
+- Large central tuner-style note display  
+- Audio recording feature  
+- GUI (Tkinter / PyQt) version
 
 ---
 
 ## License
 
-MIT License. See `LICENSE` file for full details.
+MIT License. See `LICENSE` file for details.
