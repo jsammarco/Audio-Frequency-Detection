@@ -64,6 +64,24 @@ Close the window to stop the program.
 
 ---
 
+## Calibration
+
+First, verify that the detector is resolving sub-bin peaks correctly. The FFT bin spacing at the default settings is about 21.5 Hz, so very small block-size changes can push readings up or down a bin. The code applies a parabolic (quadratic) interpolation around the strongest bin to recover sub-bin accuracy; this typically removes most “stuck on a bin edge” errors. Once you are getting stable readings, use the calibration constants in `main.py` for any remaining drift:
+
+- `CALIBRATION_SCALE`: Multiplies the measured frequency to correct sample-rate drift.
+- `CALIBRATION_OFFSET_HZ`: Adds a fixed offset after scaling.
+
+To solve for both values with two known test tones:
+
+1. Play a reference tone `f1` (e.g., 1000 Hz) and note the measured value `m1` **with calibration left at defaults**.
+2. Play a second tone `f2` (e.g., 1100 Hz) and note the measured value `m2`.
+3. Compute `CALIBRATION_SCALE = (f2 - f1) / (m2 - m1)`.
+4. Compute `CALIBRATION_OFFSET_HZ = f1 - CALIBRATION_SCALE * m1`.
+
+The resulting scale should be close to 1.0 and the offset close to 0. If the values are large, double-check that the peak is stable and that the measured values were taken **before** applying calibration.
+
+---
+
 ## How It Works
 
 ### Audio Capture

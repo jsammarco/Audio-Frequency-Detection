@@ -14,6 +14,13 @@ CHANNELS = 1              # Mono
 BUFFER_SECONDS = 2.0      # Seconds of audio to display in waveform
 PLOT_SAMPLES = int(SAMPLE_RATE * 0.1)  # Show last 0.1s in the waveform
 
+# Calibration controls (applied after FFT frequency calculation)
+# - CALIBRATION_SCALE lets you correct sample-rate drift (multiply measured freq).
+#   For example, if a 1000 Hz tone shows as 990 Hz, set CALIBRATION_SCALE = 1000/990.
+# - CALIBRATION_OFFSET_HZ applies a fixed offset after scaling.
+CALIBRATION_SCALE = 1.0
+CALIBRATION_OFFSET_HZ = 0.0
+
 # ============================
 # Globals
 # ============================
@@ -74,8 +81,27 @@ def process_audio_blocks():
         mags[0] = 0
         peak_idx = np.argmax(mags)
 
-        # Convert bin index to frequency in Hz
-        freq = peak_idx * SAMPLE_RATE / len(block)
+        # Quadratic (parabolic) interpolation around the peak bin to improve
+        # sub-bin accuracy: estimate the vertex of the parabola fitted to the
+        # log-magnitude spectrum. Skip if the peak is at an edge bin.
+        if 1 <= peak_idx < len(mags) - 1:
+            alpha = mags[peak_idx - 1]
+            beta = mags[peak_idx]
+            gamma = mags[peak_idx + 1]
+
+            denominator = (alpha - 2 * beta + gamma)
+            if denominator != 0:
+                peak_adj = 0.5 * (alpha - gamma) / denominator
+            else:
+                peak_adj = 0.0
+        else:
+            peak_adj = 0.0
+
+        # Convert (potentially sub-bin) index to frequency in Hz
+        freq = (peak_idx + peak_adj) * SAMPLE_RATE / len(block)
+
+        # Apply calibration to correct device-specific drift or offsets
+        freq = freq * CALIBRATION_SCALE + CALIBRATION_OFFSET_HZ
 
         latest_freq = freq
 
