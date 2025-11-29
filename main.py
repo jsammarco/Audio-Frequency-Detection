@@ -81,8 +81,27 @@ def process_audio_blocks():
         mags[0] = 0
         peak_idx = np.argmax(mags)
 
-        # Convert bin index to frequency in Hz
-        freq = peak_idx * SAMPLE_RATE / len(block)
+        # Quadratic (parabolic) interpolation around the peak bin to improve
+        # sub-bin accuracy: estimate the vertex of the parabola fitted to the
+        # log-magnitude spectrum. Skip if the peak is at an edge bin.
+        if 1 <= peak_idx < len(mags) - 1:
+            alpha = mags[peak_idx - 1]
+            beta = mags[peak_idx]
+            gamma = mags[peak_idx + 1]
+
+            denominator = (alpha - 2 * beta + gamma)
+            if denominator != 0:
+                peak_adj = 0.5 * (alpha - gamma) / denominator
+            else:
+                peak_adj = 0.0
+        else:
+            peak_adj = 0.0
+
+        # Convert (potentially sub-bin) index to frequency in Hz
+        freq = (peak_idx + peak_adj) * SAMPLE_RATE / len(block)
+
+        # Apply calibration to correct device-specific drift or offsets
+        freq = freq * CALIBRATION_SCALE + CALIBRATION_OFFSET_HZ
 
         # Apply calibration to correct device-specific drift or offsets
         freq = freq * CALIBRATION_SCALE + CALIBRATION_OFFSET_HZ
