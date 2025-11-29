@@ -18,8 +18,8 @@ PLOT_SAMPLES = int(SAMPLE_RATE * 0.1)  # Show last 0.1s in the waveform
 # - CALIBRATION_SCALE lets you correct sample-rate drift (multiply measured freq).
 #   For example, if a 1000 Hz tone shows as 990 Hz, set CALIBRATION_SCALE = 1000/990.
 # - CALIBRATION_OFFSET_HZ applies a fixed offset after scaling.
-CALIBRATION_SCALE = 1.0
-CALIBRATION_OFFSET_HZ = 0.0
+CALIBRATION_SCALE = (500 - 2000) / (499.7 - 2000.7) # (f2 - f1) / (m2 - m1)
+CALIBRATION_OFFSET_HZ = (2000 - CALIBRATION_SCALE * 2000.7) + 0.4 # f1 - CALIBRATION_SCALE * m1
 
 # ============================
 # Globals
