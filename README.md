@@ -64,6 +64,17 @@ Close the window to stop the program.
 
 ---
 
+## Calibration
+
+If your microphone or sound device reports frequencies slightly off (e.g., a 1000 Hz tone shows as ~990 Hz), use the calibration constants in `main.py`:
+
+- `CALIBRATION_SCALE`: Multiply the measured frequency. For the 1000 Hz → 990 Hz example, set `CALIBRATION_SCALE = 1000 / 990` (≈1.0101).
+- `CALIBRATION_OFFSET_HZ`: Apply a fixed offset after scaling if needed.
+
+Leave both values at their defaults (`1.0` and `0.0`) if no correction is required.
+
+---
+
 ## How It Works
 
 ### Audio Capture

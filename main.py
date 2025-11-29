@@ -14,6 +14,13 @@ CHANNELS = 1              # Mono
 BUFFER_SECONDS = 2.0      # Seconds of audio to display in waveform
 PLOT_SAMPLES = int(SAMPLE_RATE * 0.1)  # Show last 0.1s in the waveform
 
+# Calibration controls (applied after FFT frequency calculation)
+# - CALIBRATION_SCALE lets you correct sample-rate drift (multiply measured freq).
+#   For example, if a 1000 Hz tone shows as 990 Hz, set CALIBRATION_SCALE = 1000/990.
+# - CALIBRATION_OFFSET_HZ applies a fixed offset after scaling.
+CALIBRATION_SCALE = 1.0
+CALIBRATION_OFFSET_HZ = 0.0
+
 # ============================
 # Globals
 # ============================
@@ -76,6 +83,9 @@ def process_audio_blocks():
 
         # Convert bin index to frequency in Hz
         freq = peak_idx * SAMPLE_RATE / len(block)
+
+        # Apply calibration to correct device-specific drift or offsets
+        freq = freq * CALIBRATION_SCALE + CALIBRATION_OFFSET_HZ
 
         latest_freq = freq
 
